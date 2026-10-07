@@ -5,35 +5,25 @@
 {% block content %}
 
 <div class="page-header">
-
-    <div>
-        <h1>Dashboard</h1>
-        <p>Medical Store Management System</p>
-    </div>
-
+    <h1>Medical Store Dashboard</h1>
+    <p>Welcome, {{ session.get("username") }}</p>
 </div>
 
 <div class="cards">
 
     <div class="card">
         <h3>Total Medicines</h3>
-        <div class="number">
-            {{ total_medicines }}
-        </div>
+        <div class="number">{{ total_medicines }}</div>
     </div>
 
     <div class="card">
         <h3>Total Stock</h3>
-        <div class="number">
-            {{ total_stock }}
-        </div>
+        <div class="number">{{ total_stock }}</div>
     </div>
 
     <div class="card warning">
         <h3>Low Stock</h3>
-        <div class="number">
-            {{ low_stock }}
-        </div>
+        <div class="number">{{ low_stock }}</div>
     </div>
 
     <div class="card success">
@@ -52,23 +42,23 @@
     <div class="action-grid">
 
         <a href="{{ url_for('medicines_page') }}">
-            <span>💊</span>
+            💊<br>
             Medicine Management
         </a>
 
         <a href="{{ url_for('suppliers_page') }}">
-            <span>🚚</span>
+            🚚<br>
             Supplier Management
         </a>
 
         <a href="{{ url_for('sales_page') }}">
-            <span>🧾</span>
+            🧾<br>
             Sales & Billing
         </a>
 
         <a href="{{ url_for('reports') }}">
-            <span>📊</span>
-            View Reports
+            📊<br>
+            Reports
         </a>
 
     </div>

@@ -1,17 +1,25 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash
-from datetime import date
+from datetime import datetime, date
+from functools import wraps
 
 app = Flask(__name__)
-app.secret_key = "medical-store-secret-key"
+app.secret_key = "medical-store-secret"
 
-# ---------------- SAMPLE DATA ----------------
+# =========================================================
+# TEMPORARY DATA
+# MySQL will replace these later.
+# =========================================================
+
+users = {
+    "admin": "admin123"
+}
 
 medicines = [
     {
         "id": 1,
         "name": "Paracetamol",
         "category": "Tablet",
-        "price": 20.00,
+        "price": 20.0,
         "stock": 50,
         "expiry": "2027-05-15"
     },
@@ -19,7 +27,7 @@ medicines = [
         "id": 2,
         "name": "Amoxicillin",
         "category": "Capsule",
-        "price": 85.00,
+        "price": 85.0,
         "stock": 12,
         "expiry": "2026-12-20"
     },
@@ -27,7 +35,7 @@ medicines = [
         "id": 3,
         "name": "Cough Syrup",
         "category": "Syrup",
-        "price": 120.00,
+        "price": 120.0,
         "stock": 5,
         "expiry": "2026-11-10"
     }
@@ -51,24 +59,43 @@ suppliers = [
 sales = []
 
 
-# ---------------- LOGIN ----------------
+# =========================================================
+# LOGIN DECORATOR
+# =========================================================
+
+def login_required(function):
+
+    @wraps(function)
+    def wrapper(*args, **kwargs):
+
+        if not session.get("logged_in"):
+            return redirect(url_for("login"))
+
+        return function(*args, **kwargs)
+
+    return wrapper
+
+
+# =========================================================
+# LOGIN
+# =========================================================
 
 @app.route("/", methods=["GET", "POST"])
 def login():
 
     if request.method == "POST":
 
-        username = request.form.get("username")
-        password = request.form.get("password")
+        username = request.form.get("username", "").strip()
+        password = request.form.get("password", "")
 
-        if username == "admin" and password == "admin123":
+        if username in users and users[username] == password:
 
             session["logged_in"] = True
             session["username"] = username
 
             return redirect(url_for("dashboard"))
 
-        flash("Invalid username or password")
+        flash("Invalid username or password", "error")
 
     return render_template("login.html")
 
@@ -81,20 +108,52 @@ def logout():
     return redirect(url_for("login"))
 
 
-# ---------------- LOGIN CHECK ----------------
+# =========================================================
+# CHANGE PASSWORD
+# =========================================================
 
-def require_login():
+@app.route("/change-password", methods=["GET", "POST"])
+@login_required
+def change_password():
 
-    return session.get("logged_in") is True
+    username = session["username"]
+
+    if request.method == "POST":
+
+        current = request.form.get("current_password")
+        new = request.form.get("new_password")
+        confirm = request.form.get("confirm_password")
+
+        if users[username] != current:
+
+            flash("Current password is incorrect", "error")
+
+        elif len(new) < 4:
+
+            flash("Password must contain at least 4 characters", "error")
+
+        elif new != confirm:
+
+            flash("Passwords do not match", "error")
+
+        else:
+
+            users[username] = new
+
+            flash("Password changed successfully", "success")
+
+            return redirect(url_for("dashboard"))
+
+    return render_template("change_password.html")
 
 
-# ---------------- DASHBOARD ----------------
+# =========================================================
+# DASHBOARD
+# =========================================================
 
 @app.route("/dashboard")
+@login_required
 def dashboard():
-
-    if not require_login():
-        return redirect(url_for("login"))
 
     total_medicines = len(medicines)
 
@@ -103,11 +162,11 @@ def dashboard():
         for medicine in medicines
     )
 
-    low_stock = len([
+    low_stock = [
         medicine
         for medicine in medicines
         if medicine["stock"] <= 10
-    ])
+    ]
 
     total_sales = sum(
         sale["total"]
@@ -118,18 +177,18 @@ def dashboard():
         "dashboard.html",
         total_medicines=total_medicines,
         total_stock=total_stock,
-        low_stock=low_stock,
+        low_stock=len(low_stock),
         total_sales=total_sales
     )
 
 
-# ---------------- MEDICINE MANAGEMENT ----------------
+# =========================================================
+# MEDICINES
+# =========================================================
 
 @app.route("/medicines", methods=["GET", "POST"])
+@login_required
 def medicines_page():
-
-    if not require_login():
-        return redirect(url_for("login"))
 
     if request.method == "POST":
 
@@ -140,7 +199,7 @@ def medicines_page():
         expiry = request.form.get("expiry")
 
         new_id = max(
-            [medicine["id"] for medicine in medicines],
+            [m["id"] for m in medicines],
             default=0
         ) + 1
 
@@ -153,56 +212,85 @@ def medicines_page():
             "expiry": expiry
         })
 
-        flash("Medicine added successfully")
+        flash("Medicine added successfully", "success")
 
         return redirect(url_for("medicines_page"))
 
-    search = request.args.get("search", "").lower()
+    search = request.args.get("search", "").strip().lower()
 
     if search:
 
-        filtered_medicines = [
-            medicine
-            for medicine in medicines
-            if search in medicine["name"].lower()
+        displayed = [
+            m for m in medicines
+            if search in m["name"].lower()
         ]
 
     else:
 
-        filtered_medicines = medicines
+        displayed = medicines
 
     return render_template(
         "medicines.html",
-        medicines=filtered_medicines
+        medicines=displayed
+    )
+
+
+@app.route("/medicine/edit/<int:medicine_id>", methods=["GET", "POST"])
+@login_required
+def edit_medicine(medicine_id):
+
+    medicine = next(
+        (m for m in medicines if m["id"] == medicine_id),
+        None
+    )
+
+    if not medicine:
+
+        flash("Medicine not found", "error")
+
+        return redirect(url_for("medicines_page"))
+
+    if request.method == "POST":
+
+        medicine["name"] = request.form.get("name")
+        medicine["category"] = request.form.get("category")
+        medicine["price"] = float(request.form.get("price", 0))
+        medicine["stock"] = int(request.form.get("stock", 0))
+        medicine["expiry"] = request.form.get("expiry")
+
+        flash("Medicine updated successfully", "success")
+
+        return redirect(url_for("medicines_page"))
+
+    return render_template(
+        "edit_medicine.html",
+        medicine=medicine
     )
 
 
 @app.route("/medicine/delete/<int:medicine_id>")
+@login_required
 def delete_medicine(medicine_id):
-
-    if not require_login():
-        return redirect(url_for("login"))
 
     global medicines
 
     medicines = [
-        medicine
-        for medicine in medicines
-        if medicine["id"] != medicine_id
+        m for m in medicines
+        if m["id"] != medicine_id
     ]
 
-    flash("Medicine deleted successfully")
+    flash("Medicine deleted successfully", "success")
 
     return redirect(url_for("medicines_page"))
 
 
-# ---------------- SUPPLIER MANAGEMENT ----------------
+# =========================================================
+# SUPPLIERS
+# =========================================================
 
 @app.route("/suppliers", methods=["GET", "POST"])
+@login_required
 def suppliers_page():
-
-    if not require_login():
-        return redirect(url_for("login"))
 
     if request.method == "POST":
 
@@ -211,7 +299,7 @@ def suppliers_page():
         address = request.form.get("address")
 
         new_id = max(
-            [supplier["id"] for supplier in suppliers],
+            [s["id"] for s in suppliers],
             default=0
         ) + 1
 
@@ -222,7 +310,7 @@ def suppliers_page():
             "address": address
         })
 
-        flash("Supplier added successfully")
+        flash("Supplier added successfully", "success")
 
         return redirect(url_for("suppliers_page"))
 
@@ -232,13 +320,60 @@ def suppliers_page():
     )
 
 
-# ---------------- SALES & BILLING ----------------
+@app.route("/supplier/edit/<int:supplier_id>", methods=["GET", "POST"])
+@login_required
+def edit_supplier(supplier_id):
+
+    supplier = next(
+        (s for s in suppliers if s["id"] == supplier_id),
+        None
+    )
+
+    if not supplier:
+
+        flash("Supplier not found", "error")
+
+        return redirect(url_for("suppliers_page"))
+
+    if request.method == "POST":
+
+        supplier["name"] = request.form.get("name")
+        supplier["contact"] = request.form.get("contact")
+        supplier["address"] = request.form.get("address")
+
+        flash("Supplier updated successfully", "success")
+
+        return redirect(url_for("suppliers_page"))
+
+    return render_template(
+        "edit_supplier.html",
+        supplier=supplier
+    )
+
+
+@app.route("/supplier/delete/<int:supplier_id>")
+@login_required
+def delete_supplier(supplier_id):
+
+    global suppliers
+
+    suppliers = [
+        s for s in suppliers
+        if s["id"] != supplier_id
+    ]
+
+    flash("Supplier deleted successfully", "success")
+
+    return redirect(url_for("suppliers_page"))
+
+
+# =========================================================
+# SALES & BILLING
+# =========================================================
 
 @app.route("/sales", methods=["GET", "POST"])
+@login_required
 def sales_page():
-
-    if not require_login():
-        return redirect(url_for("login"))
 
     if request.method == "POST":
 
@@ -252,28 +387,27 @@ def sales_page():
 
         medicine = next(
             (
-                medicine
-                for medicine in medicines
-                if medicine["id"] == medicine_id
+                m for m in medicines
+                if m["id"] == medicine_id
             ),
             None
         )
 
-        if medicine is None:
+        if not medicine:
 
-            flash("Medicine not found")
+            flash("Medicine not found", "error")
 
             return redirect(url_for("sales_page"))
 
         if quantity <= 0:
 
-            flash("Invalid quantity")
+            flash("Quantity must be greater than zero", "error")
 
             return redirect(url_for("sales_page"))
 
         if quantity > medicine["stock"]:
 
-            flash("Insufficient stock")
+            flash("Insufficient stock", "error")
 
             return redirect(url_for("sales_page"))
 
@@ -281,15 +415,18 @@ def sales_page():
 
         medicine["stock"] -= quantity
 
-        sales.append({
+        sale = {
+            "id": len(sales) + 1,
             "medicine": medicine["name"],
             "quantity": quantity,
             "price": medicine["price"],
             "total": total,
             "date": date.today().strftime("%Y-%m-%d")
-        })
+        }
 
-        flash("Sale recorded successfully")
+        sales.append(sale)
+
+        flash("Sale recorded and stock updated", "success")
 
         return redirect(url_for("sales_page"))
 
@@ -300,43 +437,106 @@ def sales_page():
     )
 
 
-# ---------------- REPORTS ----------------
+@app.route("/invoice/<int:sale_id>")
+@login_required
+def invoice(sale_id):
 
-@app.route("/reports")
-def reports():
-
-    if not require_login():
-        return redirect(url_for("login"))
-
-    total_sales = sum(
-        sale["total"]
-        for sale in sales
+    sale = next(
+        (s for s in sales if s["id"] == sale_id),
+        None
     )
 
-    low_stock = [
-        medicine
-        for medicine in medicines
-        if medicine["stock"] <= 10
-    ]
+    if not sale:
 
-    today = date.today().strftime("%Y-%m-%d")
+        flash("Invoice not found", "error")
+
+        return redirect(url_for("sales_page"))
+
+    return render_template(
+        "invoice.html",
+        sale=sale
+    )
+
+
+# =========================================================
+# REPORTS
+# =========================================================
+
+@app.route("/reports")
+@login_required
+def reports():
+
+    today = date.today()
+
+    today_string = today.strftime("%Y-%m-%d")
+
+    current_month = today.strftime("%Y-%m")
 
     today_sales = [
-        sale
-        for sale in sales
-        if sale["date"] == today
+        s for s in sales
+        if s["date"] == today_string
     ]
+
+    monthly_sales = [
+        s for s in sales
+        if s["date"].startswith(current_month)
+    ]
+
+    low_stock = [
+        m for m in medicines
+        if m["stock"] <= 10
+    ]
+
+    expired = []
+
+    for medicine in medicines:
+
+        try:
+
+            expiry_date = datetime.strptime(
+                medicine["expiry"],
+                "%Y-%m-%d"
+            ).date()
+
+            if expiry_date < today:
+                expired.append(medicine)
+
+        except ValueError:
+
+            pass
+
+    total_today = sum(
+        s["total"]
+        for s in today_sales
+    )
+
+    total_month = sum(
+        s["total"]
+        for s in monthly_sales
+    )
+
+    stock_value = sum(
+        m["price"] * m["stock"]
+        for m in medicines
+    )
 
     return render_template(
         "reports.html",
-        sales=sales,
-        total_sales=total_sales,
+        today_sales=today_sales,
+        monthly_sales=monthly_sales,
+        total_today=total_today,
+        total_month=total_month,
         low_stock=low_stock,
-        today_sales=today_sales
+        expired=expired,
+        medicines=medicines,
+        suppliers=suppliers,
+        stock_value=stock_value
     )
 
 
-# ---------------- RUN APPLICATION ----------------
+# =========================================================
+# RUN
+# =========================================================
 
 if __name__ == "__main__":
     app.run(debug=True)

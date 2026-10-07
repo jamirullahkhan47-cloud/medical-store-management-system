@@ -5,10 +5,8 @@
 {% block content %}
 
 <div class="page-header">
-    <div>
-        <h1>Sales & Billing</h1>
-        <p>Record sales and generate billing information</p>
-    </div>
+    <h1>Sales & Billing</h1>
+    <p>Select medicines, calculate bills and store sales history</p>
 </div>
 
 <div class="form-card">
@@ -18,16 +16,14 @@
     <form method="POST" class="form-grid">
 
         <select name="medicine_id" required>
-
             <option value="">Select Medicine</option>
 
             {% for medicine in medicines %}
-
             <option value="{{ medicine.id }}">
-                {{ medicine.name }} - ₹{{ "%.2f"|format(medicine.price) }}
-                (Stock: {{ medicine.stock }})
+                {{ medicine.name }} -
+                ₹{{ "%.2f"|format(medicine.price) }}
+                | Stock: {{ medicine.stock }}
             </option>
-
             {% endfor %}
 
         </select>
@@ -54,22 +50,21 @@
         <h2>Sales History</h2>
 
         <button onclick="window.print()">
-            Print Invoice
+            Print
         </button>
     </div>
 
     <table>
 
         <thead>
-
             <tr>
+                <th>Invoice</th>
                 <th>Date</th>
                 <th>Medicine</th>
                 <th>Quantity</th>
                 <th>Price</th>
                 <th>Total</th>
             </tr>
-
         </thead>
 
         <tbody>
@@ -78,13 +73,24 @@
 
             <tr>
 
+                <td>
+                    <a
+                        class="edit-btn"
+                        href="{{ url_for('invoice', sale_id=sale.id) }}"
+                    >
+                        #{{ sale.id }}
+                    </a>
+                </td>
+
                 <td>{{ sale.date }}</td>
 
                 <td>{{ sale.medicine }}</td>
 
                 <td>{{ sale.quantity }}</td>
 
-                <td>₹{{ "%.2f"|format(sale.price) }}</td>
+                <td>
+                    ₹{{ "%.2f"|format(sale.price) }}
+                </td>
 
                 <td>
                     <strong>
@@ -97,7 +103,9 @@
             {% else %}
 
             <tr>
-                <td colspan="5">No sales recorded yet.</td>
+                <td colspan="6">
+                    No sales recorded yet.
+                </td>
             </tr>
 
             {% endfor %}

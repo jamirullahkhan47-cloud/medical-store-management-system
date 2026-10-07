@@ -16,9 +16,7 @@
 
 <nav class="navbar">
 
-    <div class="logo">
-        MediStore
-    </div>
+    <div class="logo">MediStore</div>
 
     <div class="nav-links">
         <a href="{{ url_for('dashboard') }}">Dashboard</a>
@@ -26,6 +24,7 @@
         <a href="{{ url_for('suppliers_page') }}">Suppliers</a>
         <a href="{{ url_for('sales_page') }}">Sales & Billing</a>
         <a href="{{ url_for('reports') }}">Reports</a>
+        <a href="{{ url_for('change_password') }}">Change Password</a>
         <a href="{{ url_for('logout') }}" class="logout">Logout</a>
     </div>
 
@@ -33,27 +32,23 @@
 
 {% endif %}
 
-<div class="container">
+<main class="container">
 
-    {% with messages = get_flashed_messages() %}
+    {% with messages = get_flashed_messages(with_categories=true) %}
 
-        {% if messages %}
+        {% for category, message in messages %}
 
-            {% for message in messages %}
+            <div class="flash {{ category }}">
+                {{ message }}
+            </div>
 
-                <div class="flash">
-                    {{ message }}
-                </div>
-
-            {% endfor %}
-
-        {% endif %}
+        {% endfor %}
 
     {% endwith %}
 
     {% block content %}{% endblock %}
 
-</div>
+</main>
 
 </body>
 </html>

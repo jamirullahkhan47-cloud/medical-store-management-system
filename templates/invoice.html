@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}Invoice{% endblock %}
+
+{% block content %}
+
+<div class="invoice">
+
+    <div class="invoice-header">
+        <div>
+            <h1>MEDICAL STORE</h1>
+            <p>Sales Invoice</p>
+        </div>
+
+        <div>
+            <strong>Invoice #{{ sale.id }}</strong><br>
+            Date: {{ sale.date }}
+        </div>
+    </div>
+
+    <hr>
+
+    <table>
+
+        <thead>
+            <tr>
+                <th>Medicine</th>
+                <th>Quantity</th>
+                <th>Price</th>
+                <th>Total</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            <tr>
+                <td>{{ sale.medicine }}</td>
+                <td>{{ sale.quantity }}</td>
+                <td>₹{{ "%.2f"|format(sale.price) }}</td>
+                <td>₹{{ "%.2f"|format(sale.total) }}</td>
+            </tr>
+        </tbody>
+
+    </table>
+
+    <div class="invoice-total">
+        <strong>Total Amount: ₹{{ "%.2f"|format(sale.total) }}</strong>
+    </div>
+
+    <div class="invoice-actions">
+        <button onclick="window.print()">Print Invoice</button>
+        <a href="{{ url_for('sales_page') }}">Back to Sales</a>
+    </div>
+
+</div>
+
+{% endblock %}
