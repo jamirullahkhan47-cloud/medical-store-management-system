@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block title %}Medicine Management{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div>
+        <h1>Medicine Management</h1>
+        <p>Add, search and manage medicines</p>
+    </div>
+</div>
+
+<div class="form-card">
+
+    <h2>Add New Medicine</h2>
+
+    <form method="POST" class="form-grid">
+
+        <input type="text" name="name" placeholder="Medicine Name" required>
+
+        <input type="text" name="category" placeholder="Category" required>
+
+        <input type="number" step="0.01" name="price" placeholder="Price" required>
+
+        <input type="number" name="stock" placeholder="Stock Quantity" required>
+
+        <input type="date" name="expiry" required>
+
+        <button type="submit">Add Medicine</button>
+
+    </form>
+
+</div>
+
+<div class="table-card">
+
+    <div class="table-header">
+        <h2>Medicine Records</h2>
+
+        <form method="GET">
+            <input
+                type="text"
+                name="search"
+                placeholder="Search medicine..."
+                value="{{ request.args.get('search', '') }}"
+            >
+            <button type="submit">Search</button>
+        </form>
+    </div>
+
+    <table>
+
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Medicine</th>
+                <th>Category</th>
+                <th>Price</th>
+                <th>Stock</th>
+                <th>Expiry</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+            {% for medicine in medicines %}
+
+            <tr>
+
+                <td>{{ medicine.id }}</td>
+
+                <td>{{ medicine.name }}</td>
+
+                <td>{{ medicine.category }}</td>
+
+                <td>₹{{ "%.2f"|format(medicine.price) }}</td>
+
+                <td>
+                    {% if medicine.stock <= 10 %}
+                        <span class="badge danger">
+                            {{ medicine.stock }}
+                        </span>
+                    {% else %}
+                        <span class="badge">
+                            {{ medicine.stock }}
+                        </span>
+                    {% endif %}
+                </td>
+
+                <td>{{ medicine.expiry }}</td>
+
+                <td>
+                    <a
+                        class="delete-btn"
+                        href="{{ url_for('delete_medicine', medicine_id=medicine.id) }}"
+                        onclick="return confirm('Delete this medicine?')"
+                    >
+                        Delete
+                    </a>
+                </td>
+
+            </tr>
+
+            {% else %}
+
+            <tr>
+                <td colspan="7">No medicines found.</td>
+            </tr>
+
+            {% endfor %}
+
+        </tbody>
+
+    </table>
+
+</div>
+
+{% endblock %}

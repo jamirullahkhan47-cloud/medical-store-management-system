@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+
+    <div>
+        <h1>Dashboard</h1>
+        <p>Medical Store Management System</p>
+    </div>
+
+</div>
+
+<div class="cards">
+
+    <div class="card">
+        <h3>Total Medicines</h3>
+        <div class="number">
+            {{ total_medicines }}
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>Total Stock</h3>
+        <div class="number">
+            {{ total_stock }}
+        </div>
+    </div>
+
+    <div class="card warning">
+        <h3>Low Stock</h3>
+        <div class="number">
+            {{ low_stock }}
+        </div>
+    </div>
+
+    <div class="card success">
+        <h3>Total Sales</h3>
+        <div class="number">
+            ₹{{ "%.2f"|format(total_sales) }}
+        </div>
+    </div>
+
+</div>
+
+<div class="quick-actions">
+
+    <h2>Quick Actions</h2>
+
+    <div class="action-grid">
+
+        <a href="{{ url_for('medicines_page') }}">
+            <span>💊</span>
+            Medicine Management
+        </a>
+
+        <a href="{{ url_for('suppliers_page') }}">
+            <span>🚚</span>
+            Supplier Management
+        </a>
+
+        <a href="{{ url_for('sales_page') }}">
+            <span>🧾</span>
+            Sales & Billing
+        </a>
+
+        <a href="{{ url_for('reports') }}">
+            <span>📊</span>
+            View Reports
+        </a>
+
+    </div>
+
+</div>
+
+{% endblock %}

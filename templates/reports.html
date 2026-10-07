@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block title %}Reports{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div>
+        <h1>Reports</h1>
+        <p>Sales, stock and inventory reports</p>
+    </div>
+</div>
+
+<div class="cards">
+
+    <div class="card success">
+        <h3>Total Sales</h3>
+        <div class="number">
+            ₹{{ "%.2f"|format(total_sales) }}
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>Today's Sales</h3>
+        <div class="number">
+            {{ today_sales|length }}
+        </div>
+    </div>
+
+    <div class="card warning">
+        <h3>Low Stock Items</h3>
+        <div class="number">
+            {{ low_stock|length }}
+        </div>
+    </div>
+
+</div>
+
+<div class="table-card">
+
+    <div class="table-header">
+        <h2>Sales Report</h2>
+
+        <button onclick="window.print()">
+            Print Report
+        </button>
+    </div>
+
+    <table>
+
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Medicine</th>
+                <th>Quantity</th>
+                <th>Price</th>
+                <th>Total</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+            {% for sale in sales %}
+
+            <tr>
+                <td>{{ sale.date }}</td>
+                <td>{{ sale.medicine }}</td>
+                <td>{{ sale.quantity }}</td>
+                <td>₹{{ "%.2f"|format(sale.price) }}</td>
+                <td>₹{{ "%.2f"|format(sale.total) }}</td>
+            </tr>
+
+            {% else %}
+
+            <tr>
+                <td colspan="5">No sales available.</td>
+            </tr>
+
+            {% endfor %}
+
+        </tbody>
+
+    </table>
+
+</div>
+
+<div class="table-card">
+
+    <h2>Low Stock Report</h2>
+
+    <table>
+
+        <thead>
+            <tr>
+                <th>Medicine</th>
+                <th>Category</th>
+                <th>Current Stock</th>
+                <th>Expiry</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+            {% for medicine in low_stock %}
+
+            <tr>
+                <td>{{ medicine.name }}</td>
+                <td>{{ medicine.category }}</td>
+                <td>
+                    <span class="badge danger">
+                        {{ medicine.stock }}
+                    </span>
+                </td>
+                <td>{{ medicine.expiry }}</td>
+            </tr>
+
+            {% else %}
+
+            <tr>
+                <td colspan="4">No low-stock medicines.</td>
+            </tr>
+
+            {% endfor %}
+
+        </tbody>
+
+    </table>
+
+</div>
+
+{% endblock %}

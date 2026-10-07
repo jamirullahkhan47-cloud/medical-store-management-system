@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block title %}Supplier Management{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div>
+        <h1>Supplier Management</h1>
+        <p>Maintain supplier records</p>
+    </div>
+</div>
+
+<div class="form-card">
+
+    <h2>Add Supplier</h2>
+
+    <form method="POST" class="form-grid">
+
+        <input
+            type="text"
+            name="name"
+            placeholder="Supplier Name"
+            required
+        >
+
+        <input
+            type="text"
+            name="contact"
+            placeholder="Contact Number"
+            required
+        >
+
+        <input
+            type="text"
+            name="address"
+            placeholder="Address"
+            required
+        >
+
+        <button type="submit">
+            Add Supplier
+        </button>
+
+    </form>
+
+</div>
+
+<div class="table-card">
+
+    <h2>Supplier Records</h2>
+
+    <table>
+
+        <thead>
+
+            <tr>
+                <th>ID</th>
+                <th>Supplier Name</th>
+                <th>Contact</th>
+                <th>Address</th>
+            </tr>
+
+        </thead>
+
+        <tbody>
+
+            {% for supplier in suppliers %}
+
+            <tr>
+
+                <td>{{ supplier.id }}</td>
+
+                <td>{{ supplier.name }}</td>
+
+                <td>{{ supplier.contact }}</td>
+
+                <td>{{ supplier.address }}</td>
+
+            </tr>
+
+            {% else %}
+
+            <tr>
+                <td colspan="4">No suppliers found.</td>
+            </tr>
+
+            {% endfor %}
+
+        </tbody>
+
+    </table>
+
+</div>
+
+{% endblock %}
