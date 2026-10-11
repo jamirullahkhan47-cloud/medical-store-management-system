@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Edit Supplier{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h1>Edit Supplier</h1>
+    <p>Update supplier contact details</p>
+</div>
+<div class="form-card">
+    <form method="POST" class="form-grid">
+        <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
+        <input type="text" name="name" value="{{ supplier.name }}" placeholder="Supplier Name" required>
+        <input type="text" name="contact" value="{{ supplier.contact }}" placeholder="Contact Number" required>
+        <input type="text" name="address" value="{{ supplier.address }}" placeholder="Address" required>
+        <button type="submit">Save Changes</button>
+        <a href="{{ url_for('suppliers_page') }}">Cancel</a>
+    </form>
+</div>
+{% endblock %}

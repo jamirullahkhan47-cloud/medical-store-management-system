@@ -231,6 +231,14 @@ tr:hover {
     font-size: 12px;
 }
 
+.inline-form {
+    display: inline;
+}
+
+button.delete-btn {
+    padding: 7px 10px;
+}
+
 .flash {
     background: #dff5e7;
     color: #217a3c;

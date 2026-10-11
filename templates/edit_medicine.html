@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Edit Medicine{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h1>Edit Medicine</h1>
+    <p>Update medicine details and stock availability</p>
+</div>
+<div class="form-card">
+    <form method="POST" class="form-grid">
+        <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
+        <input type="text" name="name" value="{{ medicine.name }}" placeholder="Medicine Name" required>
+        <input type="text" name="category" value="{{ medicine.category }}" placeholder="Category" required>
+        <input type="number" step="0.01" min="0" name="price" value="{{ medicine.price }}" placeholder="Price" required>
+        <input type="number" min="0" name="stock" value="{{ medicine.stock }}" placeholder="Stock Quantity" required>
+        <input type="date" name="expiry" value="{{ medicine.expiry }}" required>
+        <button type="submit">Save Changes</button>
+        <a href="{{ url_for('medicines_page') }}">Cancel</a>
+    </form>
+</div>
+{% endblock %}

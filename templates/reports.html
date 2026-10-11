@@ -131,6 +131,31 @@
 
 <div class="table-card">
 
+    <h2>Low-Stock Medicines (10 or fewer)</h2>
+
+    <table>
+        <tr>
+            <th>Medicine</th>
+            <th>Category</th>
+            <th>Stock Remaining</th>
+            <th>Expiry</th>
+        </tr>
+        {% for medicine in low_stock %}
+        <tr>
+            <td>{{ medicine.name }}</td>
+            <td>{{ medicine.category }}</td>
+            <td><span class="badge danger">{{ medicine.stock }}</span></td>
+            <td>{{ medicine.expiry }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="4">No medicines are at or below the low-stock limit.</td></tr>
+        {% endfor %}
+    </table>
+
+</div>
+
+<div class="table-card">
+
     <h2>Expired Medicines Report</h2>
 
     <table>

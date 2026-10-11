@@ -15,6 +15,8 @@
 
     <form method="POST" class="form-grid">
 
+        <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
+
         <select name="medicine_id" required>
             <option value="">Select Medicine</option>
 
